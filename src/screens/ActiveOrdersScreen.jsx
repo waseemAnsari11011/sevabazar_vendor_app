@@ -1,11 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Button, ActivityIndicator } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import client from '../api/client';
 
-const HomeScreen = ({ navigation }) => {
+const ActiveOrdersScreen = ({ navigation }) => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [vendorId, setVendorId] = useState(null);
@@ -23,19 +22,16 @@ const HomeScreen = ({ navigation }) => {
                 const vendor = JSON.parse(vendorData);
                 setVendorId(vendor._id);
                 const response = await client.get(`/order/vendor/${vendor._id}`);
-                setOrders(response.data.data || []);
+                const activeOrders = (response.data.data || []).filter(item =>
+                    item.vendors?.orderStatus && !['Delivered', 'Cancelled'].includes(item.vendors.orderStatus)
+                );
+                setOrders(activeOrders);
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleLogout = async () => {
-        await AsyncStorage.removeItem('vendorToken');
-        await AsyncStorage.removeItem('vendorData');
-        navigation.replace('Login');
     };
 
     const renderOrderItem = ({ item }) => (
@@ -53,24 +49,25 @@ const HomeScreen = ({ navigation }) => {
             </View>
             <View style={styles.cardFooter}>
                 <Text style={styles.amount}>₹{item.totalAmount || 0}</Text>
-                <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+                <View style={styles.footerActions}>
+                    <Text style={styles.date}>
+                        {new Date(item.createdAt).toLocaleDateString([], { day: '2-digit', month: 'short' })} | {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => Linking.openURL(`http://10.0.2.2:3000/order/invoice/${item._id}`)}
+                        style={styles.invoiceAction}
+                    >
+                        <Text style={styles.invoiceLink}>INVOICE</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </TouchableOpacity>
     );
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Recent Orders</Text>
-                <TouchableOpacity
-                    style={styles.chatButton}
-                    onPress={() => navigation.navigate('ChatOrders')}
-                >
-                    <Icon name="chat-processing-outline" size={24} color="#fff" />
-                </TouchableOpacity>
-            </View>
             {loading ? (
-                <ActivityIndicator size="large" color="#ff6600" />
+                <ActivityIndicator size="large" color="#ff6600" style={styles.loader} />
             ) : (
                 <FlatList
                     data={orders}
@@ -79,12 +76,9 @@ const HomeScreen = ({ navigation }) => {
                     refreshing={loading}
                     onRefresh={fetchOrders}
                     contentContainerStyle={styles.listContainer}
-                    ListEmptyComponent={<Text style={styles.emptyText}>No orders found.</Text>}
+                    ListEmptyComponent={<Text style={styles.emptyText}>No active orders found.</Text>}
                 />
             )}
-            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                <Text style={styles.logoutBtnText}>Logout</Text>
-            </TouchableOpacity>
         </View>
     );
 };
@@ -96,19 +90,6 @@ const styles = StyleSheet.create({
     },
     listContainer: {
         padding: 16,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 20,
-        backgroundColor: '#fff',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#1A1A1A',
     },
     card: {
         backgroundColor: '#fff',
@@ -136,6 +117,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 8,
+        minWidth: 70,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     statusText: {
         fontSize: 10,
@@ -155,32 +139,34 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#8E8E93',
     },
+    footerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    invoiceAction: {
+        marginLeft: 12,
+        paddingVertical: 4,
+        paddingHorizontal: 10,
+        backgroundColor: '#F2F2F7',
+        borderRadius: 8,
+        minWidth: 70,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    invoiceLink: {
+        fontSize: 10,
+        color: '#555',
+        fontWeight: '700',
+    },
     emptyText: {
         textAlign: 'center',
         marginTop: 40,
         color: '#8E8E93',
         fontSize: 16,
     },
-    chatButton: {
-        backgroundColor: '#1A1A1A',
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    logoutBtn: {
-        margin: 16,
-        padding: 16,
-        backgroundColor: '#FFF1F0',
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    logoutBtnText: {
-        color: '#FF3B30',
-        fontWeight: '700',
-        fontSize: 16,
+    loader: {
+        marginTop: 40,
     },
 });
 
-export default HomeScreen;
+export default ActiveOrdersScreen;

@@ -53,3 +53,5 @@ dependencies {
         implementation "io.github.react-native-community:jsc-android:2026004.+"
     }
 }
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"

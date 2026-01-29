@@ -5,8 +5,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, ActivityIndicator } from 'react-native';
 
 import LoginScreen from '../screens/LoginScreen';
-import HomeScreen from '../screens/HomeScreen';
 import OrderDetailsScreen from '../screens/OrderDetailsScreen';
+import ChatOrderDetailsScreen from '../screens/ChatOrderDetailsScreen';
+import CreateChatOrderScreen from '../screens/CreateChatOrderScreen';
+import MainTabNavigator from './MainTabNavigator';
 
 const Stack = createStackNavigator();
 
@@ -41,8 +43,10 @@ const AppNavigator = () => {
         <NavigationContainer>
             <Stack.Navigator initialRouteName={initialRoute}>
                 <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-                <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Dashboard' }} />
+                <Stack.Screen name="Home" component={MainTabNavigator} options={{ headerShown: false }} />
                 <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} options={{ title: 'Order Details' }} />
+                <Stack.Screen name="ChatOrderDetails" component={ChatOrderDetailsScreen} options={{ title: 'Chat Order Details' }} />
+                <Stack.Screen name="CreateChatOrder" component={CreateChatOrderScreen} options={{ title: 'Create Order' }} />
             </Stack.Navigator>
         </NavigationContainer>
     );

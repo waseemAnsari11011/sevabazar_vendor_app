@@ -21,7 +21,6 @@ const LoginScreen = ({ navigation }) => {
                 password,
             });
 
-            console.log('Login response received:', response.data);
             const { token, vendor } = response.data;
             await AsyncStorage.setItem('vendorToken', token);
             await AsyncStorage.setItem('vendorData', JSON.stringify(vendor));
@@ -29,10 +28,6 @@ const LoginScreen = ({ navigation }) => {
             navigation.replace('Home');
         } catch (error) {
             console.error('Login error detail:', error);
-            if (error.response) {
-                console.error('Error data:', error.response.data);
-                console.error('Error status:', error.response.status);
-            }
             Alert.alert('Login Failed', error.response?.data?.message || 'Invalid credentials');
         } finally {
             setLoading(false);
@@ -41,27 +36,44 @@ const LoginScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Vendor Login</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
-            {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-            ) : (
-                <Button title="Login" onPress={handleLogin} />
-            )}
+            <View style={styles.header}>
+                <Text style={styles.title}>Login</Text>
+                <Text style={styles.subtitle}>Sign in to your account</Text>
+            </View>
+
+            <View style={styles.form}>
+                <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Email or Phone</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Enter your email"
+                        placeholderTextColor="#8E8E93"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                    />
+                </View>
+
+                <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Password</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="••••••••"
+                        placeholderTextColor="#8E8E93"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                    />
+                </View>
+
+                {loading ? (
+                    <ActivityIndicator size="large" color="#ff6600" style={styles.loader} />
+                ) : (
+                    <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
+                        <Text style={styles.loginBtnText}>Sign In</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
         </View>
     );
 };
@@ -69,22 +81,60 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        padding: 20,
         backgroundColor: '#fff',
+        padding: 24,
+        justifyContent: 'center',
+    },
+    header: {
+        marginBottom: 32,
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
+        fontSize: 32,
+        fontWeight: '700',
+        color: '#1A1A1A',
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#8E8E93',
+    },
+    form: {
+        width: '100%',
+    },
+    inputContainer: {
+        marginBottom: 16,
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1A1A1A',
+        marginBottom: 8,
+        marginLeft: 4,
     },
     input: {
+        backgroundColor: '#F8F9FA',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderRadius: 12,
+        fontSize: 16,
+        color: '#1A1A1A',
         borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 10,
-        marginBottom: 15,
-        borderRadius: 5,
+        borderColor: '#F2F2F7',
+    },
+    loader: {
+        marginTop: 20,
+    },
+    loginBtn: {
+        backgroundColor: '#ff6600',
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    loginBtnText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '700',
     },
 });
 

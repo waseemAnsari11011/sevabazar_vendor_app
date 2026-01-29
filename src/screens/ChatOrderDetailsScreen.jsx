@@ -1,41 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert } from 'react-native';
 import client from '../api/client';
 
-const OrderDetailsScreen = ({ route }) => {
+const ChatOrderDetailsScreen = ({ route }) => {
     const { orderId, vendorId } = route.params;
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchOrderDetails();
+        fetchChatOrderDetails();
     }, []);
 
-    const fetchOrderDetails = async () => {
+    const fetchChatOrderDetails = async () => {
         try {
-            const url = `/order/${orderId}/vendor/${vendorId}`;
-            const response = await client.get(url);
-            setOrder(response.data.data);
+            const response = await client.get(`/chat-order/${orderId}`);
+            setOrder(response.data);
         } catch (error) {
-            console.error('Error fetching order details:', error);
+            console.error('Error fetching chat order details:', error);
             Alert.alert('Error', 'Failed to fetch order details.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleUpdateStatus = async (newStatus, otp = null) => {
+    const handleUpdateStatus = async (newStatus) => {
         try {
             setLoading(true);
-            const payload = { newStatus };
-            if (otp) payload.pickupOtp = otp;
-
-            const response = await client.put(`/order/status/${orderId}/vendor/${vendorId}`, payload);
-            fetchOrderDetails();
+            const response = await client.put(`/chat-order/status/${orderId}/vendor/`, { newStatus });
+            fetchChatOrderDetails();
             Alert.alert('Success', `Order status updated to ${newStatus}.`);
         } catch (error) {
-            console.error('Error updating status:', error);
-            Alert.alert('Error', error.response?.data?.error || 'Failed to update status');
+            console.error('Error updating chat order status:', error);
+            Alert.alert('Error', 'Failed to update status.');
         } finally {
             setLoading(false);
         }
@@ -45,12 +41,12 @@ const OrderDetailsScreen = ({ route }) => {
         try {
             setLoading(true);
             const payload = {
-                orderId: order.orderId,
+                orderId: order.orderId, // This is the numeric orderId
                 vendorId: vendorId,
                 radius: 10
             };
             const response = await client.post('/drivers/nearest', payload);
-            fetchOrderDetails();
+            fetchChatOrderDetails();
             Alert.alert('Success', 'Delivery partner search initiated. You will be notified when someone accepts.');
         } catch (error) {
             console.error('Error requesting courier:', error);
@@ -102,80 +98,78 @@ const OrderDetailsScreen = ({ route }) => {
 
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Customer Information</Text>
-                            <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.customer?.name || 'Walk-in'}</Text>
-                            <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.customer?.contactNumber || 'N/A'}</Text>
+                            <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.customer?.name || order.name}</Text>
+                            <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.customer?.contactNumber || order.shippingAddress?.phone || 'N/A'}</Text>
                         </View>
 
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Delivery Address</Text>
-                            <Text style={styles.infoText}>{order.shippingAddress?.address || 'Pickup from Shop'}</Text>
+                            <Text style={styles.sectionTitle}>Shipping Address</Text>
+                            <Text style={styles.infoText}>{order.shippingAddress?.address || 'N/A'}</Text>
                         </View>
 
                         {order.driverId && (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Rider Information</Text>
-                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.riderName || 'Assigning...'}</Text>
-                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.riderContact || 'N/A'}</Text>
+                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.driverId.personalDetails?.name || 'Assigning...'}</Text>
+                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.driverId.personalDetails?.phone || 'N/A'}</Text>
                             </View>
                         )}
 
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Order Items</Text>
-                            {order.items?.map((item, index) => (
-                                <View key={index} style={styles.itemContainer}>
-                                    <View style={styles.itemRow}>
-                                        {item.image && (
-                                            <Image source={{ uri: item.image }} style={styles.itemImage} />
-                                        ) || <View style={[styles.itemImage, { backgroundColor: '#F2F2F7', justifyContent: 'center', alignItems: 'center' }]}><Text style={{ fontSize: 10, color: '#8E8E93' }}>No Img</Text></View>}
-                                        <View style={styles.itemInfo}>
-                                            <Text style={styles.itemName}>{item.name} x{item.quantity}</Text>
-                                            {item.variations && item.variations.length > 0 && (
-                                                <Text style={styles.variationText}>
-                                                    {item.variations.map(v =>
-                                                        v.attributes?.map(a => `${a.name}: ${a.value}`).join(', ')
-                                                    ).filter(Boolean).join(' | ')}
-                                                </Text>
-                                            )}
-                                        </View>
-                                        <Text style={styles.itemPrice}>₹{item.totalAmount || (item.price * item.quantity)}</Text>
-                                    </View>
-                                </View>
-                            ))}
-                            <View style={styles.divider} />
-
-                            <View style={[styles.totalRow, { marginTop: 8 }]}>
-                                <Text style={styles.totalLabel}>Total Amount</Text>
-                                <Text style={styles.totalValue}>₹{order.totalAmount}</Text>
+                            <Text style={styles.sectionTitle}>Order Message</Text>
+                            <View style={styles.messageBox}>
+                                <Text style={styles.messageText}>{order.orderMessage}</Text>
                             </View>
                         </View>
+
+                        {order.products && order.products.length > 0 && (
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Order Items</Text>
+                                {order.products.map((item, index) => (
+                                    <View key={index} style={styles.itemRow}>
+                                        <Text style={styles.itemName}>{item.name} x{item.quantity}</Text>
+                                        <Text style={styles.itemPrice}>₹{item.totalAmount || (item.price * item.quantity)}</Text>
+                                    </View>
+                                ))}
+                                <View style={styles.divider} />
+                                <View style={[styles.totalRow, { marginTop: 8 }]}>
+                                    <Text style={styles.grandLabel}>Total Amount</Text>
+                                    <Text style={styles.grandValue}>₹{order.totalAmount}</Text>
+                                </View>
+                                <Text style={styles.paymentStatus}>Payment: {order.paymentStatus}</Text>
+                            </View>
+                        )}
                     </View>
                 )}
                 keyExtractor={item => item.key}
-                contentContainerStyle={{ paddingBottom: 40 }}
+                contentContainerStyle={{ paddingBottom: 20 }}
             />
 
             <View style={styles.footer}>
-                {order.orderStatus === 'Pending' && (
+                {(['pending', 'Pending', 'In Review', 'in review'].includes(order.orderStatus) && order.products?.length > 0) && (
                     <View style={styles.actionRow}>
                         <TouchableOpacity
                             style={[styles.actionBtn, styles.acceptBtn]}
                             onPress={() => handleUpdateStatus('Processing')}
+                            disabled={loading}
                         >
                             <Text style={styles.btnText}>Accept Order</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.actionBtn, styles.rejectBtn]}
                             onPress={() => handleUpdateStatus('Cancelled')}
+                            disabled={loading}
                         >
                             <Text style={styles.btnText}>Reject</Text>
                         </TouchableOpacity>
                     </View>
                 )}
 
-                {order.orderStatus === 'Processing' && !order.driverId && (
+                {['processing', 'Processing'].includes(order.orderStatus) && !order.driverId && (
                     <TouchableOpacity
                         style={[styles.fullBtn, styles.courierBtn]}
                         onPress={handleRequestCourier}
+                        disabled={loading}
                     >
                         <Text style={styles.btnText}>Request Delivery Partner</Text>
                     </TouchableOpacity>
@@ -259,35 +253,18 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#555',
     },
-    itemContainer: {
-        marginBottom: 12,
-    },
     itemRow: {
         flexDirection: 'row',
-        alignItems: 'center',
-    },
-    itemImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 8,
-        marginRight: 12,
-    },
-    itemInfo: {
-        flex: 1,
+        justifyContent: 'space-between',
+        marginBottom: 8,
     },
     itemName: {
         fontSize: 15,
-        fontWeight: '600',
         color: '#1A1A1A',
-    },
-    variationText: {
-        fontSize: 12,
-        color: '#8E8E93',
-        marginTop: 2,
     },
     itemPrice: {
         fontSize: 15,
-        fontWeight: '700',
+        fontWeight: '600',
         color: '#1A1A1A',
     },
     divider: {
@@ -302,23 +279,77 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     totalLabel: {
+        fontSize: 15,
+        color: '#555',
+    },
+    totalValue: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1A1A1A',
+    },
+    smallLabel: {
+        fontSize: 13,
+        color: '#8E8E93',
+    },
+    smallValue: {
+        fontSize: 14,
+        color: '#4CAF50',
+    },
+    grandLabel: {
         fontSize: 18,
         fontWeight: '700',
         color: '#1A1A1A',
     },
-    totalValue: {
+    grandValue: {
         fontSize: 20,
         fontWeight: '700',
         color: '#ff6600',
     },
-    smallLabel: {
-        fontSize: 14,
+    paymentStatus: {
+        fontSize: 12,
         color: '#8E8E93',
+        marginTop: 8,
+        fontStyle: 'italic',
     },
-    smallValue: {
-        fontSize: 15,
-        color: '#1A1A1A',
-        fontWeight: '500',
+    explanationRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: -4,
+        marginBottom: 4,
+    },
+    explanationText: {
+        fontSize: 10,
+        color: '#8E8E93',
+        fontStyle: 'italic',
+    },
+    footer: {
+        padding: 16,
+        backgroundColor: '#fff',
+        borderTopWidth: 1,
+        borderTopColor: '#F2F2F7',
+    },
+    actionRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    actionBtn: {
+        flex: 1,
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    acceptBtn: {
+        backgroundColor: '#4CAF50',
+        marginRight: 8,
+    },
+    rejectBtn: {
+        backgroundColor: '#FF3B30',
+        marginLeft: 8,
+    },
+    btnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '700',
     },
     otpCard: {
         backgroundColor: '#1A1A1A',
@@ -345,30 +376,6 @@ const styles = StyleSheet.create({
         color: '#8E8E93',
         marginTop: 8,
     },
-    footer: {
-        padding: 16,
-        backgroundColor: '#fff',
-        borderTopWidth: 1,
-        borderTopColor: '#F2F2F7',
-    },
-    actionRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    actionBtn: {
-        flex: 1,
-        paddingVertical: 16,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    acceptBtn: {
-        backgroundColor: '#4CAF50',
-        marginRight: 8,
-    },
-    rejectBtn: {
-        backgroundColor: '#FF3B30',
-        marginLeft: 8,
-    },
     fullBtn: {
         width: '100%',
         paddingVertical: 16,
@@ -378,11 +385,18 @@ const styles = StyleSheet.create({
     courierBtn: {
         backgroundColor: '#ff6600',
     },
-    btnText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '700',
+    messageBox: {
+        backgroundColor: '#F8F9FA',
+        padding: 12,
+        borderRadius: 12,
+        borderLeftWidth: 4,
+        borderLeftColor: '#ff6600',
+    },
+    messageText: {
+        fontSize: 15,
+        color: '#1A1A1A',
+        lineHeight: 22,
     },
 });
 
-export default OrderDetailsScreen;
+export default ChatOrderDetailsScreen;
