@@ -2,6 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert, Image } from 'react-native';
 import client from '../api/client';
 
+const formatAddress = (addr) => {
+    if (!addr) return 'Pickup from Shop';
+    if (typeof addr === 'string') return addr;
+
+    const parts = [
+        addr.landmark,
+        addr.addressLine2,
+        addr.postalCode
+    ].filter(Boolean);
+
+    return parts.length > 0 ? parts.join(', ') : 'Pickup from Shop';
+};
+
 const OrderDetailsScreen = ({ route }) => {
     const { orderId, vendorId } = route.params;
     const [order, setOrder] = useState(null);
@@ -102,13 +115,21 @@ const OrderDetailsScreen = ({ route }) => {
 
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Customer Information</Text>
-                            <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.customer?.name || 'Walk-in'}</Text>
-                            <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.customer?.contactNumber || 'N/A'}</Text>
+                            <Text style={styles.infoText}>
+                                <Text style={styles.infoLabel}>Name:</Text>{' '}
+                                {order.customer?.name || order.shippingAddress?.name || order.customerNameFallback || 'Walk-in'}
+                            </Text>
+                            <Text style={styles.infoText}>
+                                <Text style={styles.infoLabel}>Phone:</Text>{' '}
+                                {order.shippingAddress?.phone || order.customer?.contactNumber || 'N/A'}
+                            </Text>
                         </View>
 
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Delivery Address</Text>
-                            <Text style={styles.infoText}>{order.shippingAddress?.address || 'Pickup from Shop'}</Text>
+                            <Text style={styles.infoText}>
+                                {order.shippingAddress?.address || formatAddress(order.shippingAddress)}
+                            </Text>
                         </View>
 
                         {order.driverId && (

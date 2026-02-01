@@ -2,6 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert } from 'react-native';
 import client from '../api/client';
 
+const formatAddress = (addr) => {
+    if (!addr) return 'N/A';
+    if (typeof addr === 'string') return addr;
+
+    const parts = [
+        addr.landmark,
+        addr.addressLine2,
+        addr.postalCode
+    ].filter(Boolean);
+
+    return parts.length > 0 ? parts.join(', ') : 'N/A';
+};
+
 const ChatOrderDetailsScreen = ({ route }) => {
     const { orderId, vendorId } = route.params;
     const [order, setOrder] = useState(null);
@@ -98,13 +111,21 @@ const ChatOrderDetailsScreen = ({ route }) => {
 
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Customer Information</Text>
-                            <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.customer?.name || order.name}</Text>
-                            <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.customer?.contactNumber || order.shippingAddress?.phone || 'N/A'}</Text>
+                            <Text style={styles.infoText}>
+                                <Text style={styles.infoLabel}>Name:</Text>{' '}
+                                {order.customer?.name || order.shippingAddress?.name || order.customerNameFallback || order.name || 'Walk-in'}
+                            </Text>
+                            <Text style={styles.infoText}>
+                                <Text style={styles.infoLabel}>Phone:</Text>{' '}
+                                {order.shippingAddress?.phone || order.customer?.contactNumber || 'N/A'}
+                            </Text>
                         </View>
 
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Shipping Address</Text>
-                            <Text style={styles.infoText}>{order.shippingAddress?.address || 'N/A'}</Text>
+                            <Text style={styles.infoText}>
+                                {order.shippingAddress?.address || formatAddress(order.shippingAddress)}
+                            </Text>
                         </View>
 
                         {order.driverId && (
