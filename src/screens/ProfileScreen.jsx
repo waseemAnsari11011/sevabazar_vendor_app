@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -16,15 +16,20 @@ const ProfileScreen = ({ navigation }) => {
     };
 
     const handleLogout = async () => {
-        await AsyncStorage.removeItem('vendorToken');
-        await AsyncStorage.removeItem('vendorData');
-        navigation.getParent()?.replace('Login');
+        try {
+            await AsyncStorage.removeItem('vendorToken');
+            await AsyncStorage.removeItem('vendorData');
+            // Navigate to Login (will bubble up to parent stack)
+            navigation.navigate('Login');
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
     };
 
     if (!vendor) return null;
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             <View style={styles.header}>
                 <View style={styles.avatar}>
                     <Text style={styles.avatarText}>{vendor.name?.charAt(0)}</Text>
@@ -38,27 +43,28 @@ const ProfileScreen = ({ navigation }) => {
                 <View style={styles.infoCard}>
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Business Type</Text>
-                        <Text style={styles.value}>{vendor.businessType || 'N/A'}</Text>
+                        <Text style={styles.value}>{vendor.category?.name || vendor.vendorInfo?.businessName || vendor.businessType || 'N/A'}</Text>
                     </View>
                     <View style={styles.divider} />
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Contact Phone</Text>
-                        <Text style={styles.value}>{vendor.phone || vendor.contactNumber || 'N/A'}</Text>
+                        <Text style={styles.value}>{vendor.vendorInfo?.contactNumber || vendor.phone || vendor.contactNumber || 'N/A'}</Text>
                     </View>
                     <View style={styles.divider} />
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Address</Text>
                         <Text style={[styles.value, { textAlign: 'right', flex: 1, marginLeft: 20 }]}>
-                            {vendor.shopAddress || 'N/A'}
+                            {vendor.location?.address?.addressLine1 || vendor.address?.addressLine1 || vendor.shopAddress || 'N/A'}
                         </Text>
                     </View>
                 </View>
             </View>
 
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                <Icon name="logout" size={20} color="#FF3B30" style={{ marginRight: 8 }} />
                 <Text style={styles.logoutText}>Log Out</Text>
             </TouchableOpacity>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -66,7 +72,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F8F9FA',
+    },
+    contentContainer: {
         padding: 20,
+        paddingBottom: 40,
     },
     header: {
         alignItems: 'center',
@@ -140,6 +149,8 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         borderRadius: 12,
         alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
     logoutText: {
         color: '#FF3B30',
