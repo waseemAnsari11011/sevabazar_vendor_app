@@ -1,8 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Modal, TextInput, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import client from '../api/client';
+import DateFilter from '../components/DateFilter';
+import { getDateRange } from '../utils/dateUtils';
 
 const ActiveOrdersScreen = ({ navigation }) => {
     const [orders, setOrders] = useState([]);
@@ -17,10 +19,12 @@ const ActiveOrdersScreen = ({ navigation }) => {
 
     const fetchOrders = async () => {
         try {
+            setLoading(true);
             const vendorData = await AsyncStorage.getItem('vendorData');
             if (vendorData) {
                 const vendor = JSON.parse(vendorData);
                 setVendorId(vendor._id);
+
                 const response = await client.get(`/order/vendor/${vendor._id}`);
                 const activeOrders = (response.data.data || []).filter(item =>
                     item.vendors?.orderStatus && !['Delivered', 'Cancelled'].includes(item.vendors.orderStatus)
@@ -74,7 +78,7 @@ const ActiveOrdersScreen = ({ navigation }) => {
                     keyExtractor={item => item._id}
                     renderItem={renderOrderItem}
                     refreshing={loading}
-                    onRefresh={fetchOrders}
+                    onRefresh={() => fetchOrders()}
                     contentContainerStyle={styles.listContainer}
                     ListEmptyComponent={<Text style={styles.emptyText}>No active orders found.</Text>}
                 />
@@ -166,6 +170,55 @@ const styles = StyleSheet.create({
     },
     loader: {
         marginTop: 40,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 20,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#F2F2F7',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 12,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    modalButton: {
+        flex: 1,
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+    cancelButton: {
+        backgroundColor: '#F2F2F7',
+    },
+    applyButton: {
+        backgroundColor: '#ff6600',
+    },
+    cancelButtonText: {
+        color: '#8E8E93',
+        fontWeight: '600',
+    },
+    applyButtonText: {
+        color: '#fff',
+        fontWeight: '600',
     },
 });
 

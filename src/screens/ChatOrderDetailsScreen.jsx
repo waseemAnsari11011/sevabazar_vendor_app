@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import client from '../api/client';
 
 const formatAddress = (addr) => {
@@ -15,17 +17,27 @@ const formatAddress = (addr) => {
     return parts.length > 0 ? parts.join(', ') : 'N/A';
 };
 
-const ChatOrderDetailsScreen = ({ route }) => {
+const ChatOrderDetailsScreen = ({ route, navigation }) => {
     const { orderId, vendorId } = route.params;
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [localVendorId, setLocalVendorId] = useState(vendorId);
 
-    useEffect(() => {
-        fetchChatOrderDetails();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchChatOrderDetails();
+        }, [])
+    );
 
     const fetchChatOrderDetails = async () => {
         try {
+            if (!localVendorId) {
+                const vendorData = await AsyncStorage.getItem('vendorData');
+                if (vendorData) {
+                    const vendor = JSON.parse(vendorData);
+                    setLocalVendorId(vendor._id);
+                }
+            }
             const response = await client.get(`/chat-order/${orderId}`);
             setOrder(response.data);
         } catch (error) {
@@ -55,7 +67,7 @@ const ChatOrderDetailsScreen = ({ route }) => {
             setLoading(true);
             const payload = {
                 orderId: order.orderId, // This is the numeric orderId
-                vendorId: vendorId,
+                vendorId: localVendorId,
                 radius: 10
             };
             const response = await client.post('/drivers/nearest', payload);
@@ -99,6 +111,18 @@ const ChatOrderDetailsScreen = ({ route }) => {
                                 </View>
                             </View>
                             <Text style={styles.dateText}>{new Date(order.createdAt).toLocaleString()}</Text>
+                            {['In Review', 'in review'].includes(order.orderStatus) && (
+                                <TouchableOpacity
+                                    style={styles.createBtn}
+                                    onPress={() => navigation.navigate('CreateChatOrder', {
+                                        orderId: order.orderId,
+                                        vendorId: localVendorId,
+                                        orderMsg: order.orderMessage
+                                    })}
+                                >
+                                    <Text style={styles.createBtnText}>Create Order</Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
 
                         {order.driverId && order.pickupOtp && (
@@ -417,6 +441,18 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#1A1A1A',
         lineHeight: 22,
+    },
+    createBtn: {
+        backgroundColor: '#ff6600',
+        paddingVertical: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 16,
+    },
+    createBtnText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
     },
 });
 

@@ -135,8 +135,8 @@ const OrderDetailsScreen = ({ route }) => {
                         {order.driverId && (
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Rider Information</Text>
-                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.riderName || 'Assigning...'}</Text>
-                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.riderContact || 'N/A'}</Text>
+                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.driverId.personalDetails?.name || 'Assigning...'}</Text>
+                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.driverId.personalDetails?.phone || 'N/A'}</Text>
                             </View>
                         )}
 

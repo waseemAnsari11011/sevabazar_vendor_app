@@ -1,9 +1,17 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
-// Use 10.0.2.2 for Android Emulator to access localhost
-// const BASE_URL = 'http://10.0.2.2:8000';
-const BASE_URL = 'https://server.sevabazar.com'; // For real device (replace with your IP)
+// Automatic BASE_URL detection for development
+// For production, use: 'https://server.sevabazar.com'
+let BASE_URL = 'https://server.sevabazar.com';
+
+if (__DEV__) {
+    BASE_URL = (Platform.OS === 'android' && DeviceInfo.isEmulatorSync())
+        ? 'http://10.0.2.2:8000'
+        : 'http://192.168.137.1:8000';
+}
 
 const client = axios.create({
     baseURL: BASE_URL,

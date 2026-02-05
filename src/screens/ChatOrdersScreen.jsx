@@ -1,8 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Modal, TextInput, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import client from '../api/client';
+import DateFilter from '../components/DateFilter';
+import { getDateRange } from '../utils/dateUtils';
 
 const ChatOrdersScreen = ({ navigation }) => {
     const [orders, setOrders] = useState([]);
@@ -17,10 +19,12 @@ const ChatOrdersScreen = ({ navigation }) => {
 
     const fetchChatOrders = async () => {
         try {
+            setLoading(true);
             const vendorData = await AsyncStorage.getItem('vendorData');
             if (vendorData) {
                 const vendor = JSON.parse(vendorData);
                 setVendorId(vendor._id);
+
                 const response = await client.get(`/chat-order/vendor/${vendor._id}`);
                 const activeChatOrders = (response.data.data || []).filter(order =>
                     !['Delivered', 'Cancelled'].includes(order.orderStatus)
@@ -37,43 +41,27 @@ const ChatOrdersScreen = ({ navigation }) => {
     const renderOrderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('ChatOrderDetails', { orderId: item.orderId, vendorId: vendorId })}
+            onPress={() => navigation.navigate('ChatOrderDetails', { orderId: item.orderId })}
         >
             <View style={styles.cardHeader}>
-                <View style={styles.headerLeft}>
-                    <Text style={styles.orderId}>Order #{item.shortId}</Text>
-                    <View style={styles.statusBadge}>
-                        <Text style={styles.statusText}>{item.orderStatus?.toUpperCase()}</Text>
-                    </View>
+                <Text style={styles.orderId}>Order #{item.shortId}</Text>
+                <View style={[styles.statusBadge, { backgroundColor: item.orderStatus === 'Delivered' ? '#E8F5E9' : '#FFF3E0' }]}>
+                    <Text style={[styles.statusText, { color: item.orderStatus === 'Delivered' ? '#2E7D32' : '#EF6C00' }]}>
+                        {item.orderStatus.toUpperCase()}
+                    </Text>
                 </View>
-                {['In Review', 'in review'].includes(item.orderStatus) && (
-                    <TouchableOpacity
-                        style={styles.createButton}
-                        onPress={() => navigation.navigate('CreateChatOrder', {
-                            orderId: item.orderId,
-                            vendorId: vendorId,
-                            orderMsg: item.orderMessage
-                        })}
-                    >
-                        <Text style={styles.createButtonText}>Create</Text>
-                    </TouchableOpacity>
-                )}
             </View>
-            <Text style={styles.customerName}>Customer: {item.customer?.name || item.name}</Text>
-            <Text style={styles.orderMessage} numberOfLines={1}>Message: {item.orderMessage}</Text>
             <View style={styles.cardFooter}>
+                <Text style={styles.amount}>₹{(item.totalAmount || (item.deliveryCharge + item.shippingFee) || 0).toFixed(2)}</Text>
                 <View style={styles.footerActions}>
                     <Text style={styles.date}>
                         {new Date(item.createdAt).toLocaleDateString([], { day: '2-digit', month: 'short' })} | {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
                     <TouchableOpacity
-                        onPress={() => Linking.openURL(`http://10.0.2.2:3000/chat-order/invoice/${item.orderId}`)}
+                        onPress={() => Linking.openURL(`http://10.0.2.2:3000/chat-order/invoice/${item._id}`)}
                         style={styles.invoiceAction}
                     >
                         <Text style={styles.invoiceLink}>INVOICE</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate('ChatOrderDetails', { orderId: item.orderId, vendorId: vendorId })}>
-                        <Text style={styles.detailsLink}>View Details</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -90,7 +78,7 @@ const ChatOrdersScreen = ({ navigation }) => {
                     keyExtractor={item => item.orderId}
                     renderItem={renderOrderItem}
                     refreshing={loading}
-                    onRefresh={fetchChatOrders}
+                    onRefresh={() => fetchChatOrders()}
                     contentContainerStyle={styles.listContainer}
                     ListEmptyComponent={<Text style={styles.emptyText}>No chat orders found.</Text>}
                 />
@@ -124,34 +112,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 10,
     },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    createButton: {
-        backgroundColor: '#ff6600',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 12,
-        shadowColor: '#ff6600',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    createButtonText: {
-        color: '#fff',
-        fontSize: 13,
-        fontWeight: '700',
-    },
     orderId: {
         fontSize: 16,
         fontWeight: '600',
         color: '#1A1A1A',
-        marginRight: 8,
     },
     statusBadge: {
-        backgroundColor: '#FFF3E0',
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 8,
@@ -162,42 +128,27 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 10,
         fontWeight: '700',
-        color: '#EF6C00',
-    },
-    customerName: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 4,
-    },
-    orderMessage: {
-        fontSize: 13,
-        color: '#666',
-        marginBottom: 10,
     },
     cardFooter: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderTopWidth: 1,
-        borderTopColor: '#F2F2F7',
-        paddingTop: 10,
+    },
+    amount: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#ff6600',
     },
     date: {
         fontSize: 12,
         color: '#8E8E93',
-    },
-    detailsLink: {
-        fontSize: 12,
-        color: '#ff6600',
-        fontWeight: '600',
     },
     footerActions: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     invoiceAction: {
-        marginLeft: 16,
+        marginLeft: 12,
         paddingVertical: 4,
         paddingHorizontal: 10,
         backgroundColor: '#F2F2F7',
@@ -219,6 +170,55 @@ const styles = StyleSheet.create({
     },
     loader: {
         marginTop: 40,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 20,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#F2F2F7',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 12,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    modalButton: {
+        flex: 1,
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+    cancelButton: {
+        backgroundColor: '#F2F2F7',
+    },
+    applyButton: {
+        backgroundColor: '#ff6600',
+    },
+    cancelButtonText: {
+        color: '#8E8E93',
+        fontWeight: '600',
+    },
+    applyButtonText: {
+        color: '#fff',
+        fontWeight: '600',
     },
 });
 
