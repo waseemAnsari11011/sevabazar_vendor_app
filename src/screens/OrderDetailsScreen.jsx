@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert, Image, Modal, ScrollView, TextInput, Linking } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import client from '../api/client';
+import socketService from '../services/socketService';
+import { formatPrice } from '../utils/currencyUtils';
 
 const formatAddress = (addr) => {
     if (!addr) return 'Pickup from Shop';
     if (typeof addr === 'string') return addr;
+    if (addr.fullAddress) return addr.fullAddress;
 
     const parts = [
         addr.landmark,
@@ -15,14 +19,47 @@ const formatAddress = (addr) => {
     return parts.length > 0 ? parts.join(', ') : 'Pickup from Shop';
 };
 
+const REJECTION_REASONS = [
+    { id: 1, label: 'Medical Issue', value: 'medical_issue' },
+    { id: 2, label: 'Too Busy', value: 'too_busy' },
+    { id: 3, label: 'Unable to Deliver', value: 'unable_to_deliver' },
+    { id: 4, label: 'Incorrect Order Details', value: 'incorrect_order' },
+    { id: 5, label: 'Other', value: 'other' },
+];
+
 const OrderDetailsScreen = ({ route }) => {
     const { orderId, vendorId } = route.params;
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [selectedReason, setSelectedReason] = useState(null);
+    const [customReason, setCustomReason] = useState('');
 
     useEffect(() => {
         fetchOrderDetails();
+
+        // Listen for status updates for this order
+        const handleStatusUpdate = (data) => {
+            if (data.orderId === orderId) {
+                console.log('[OrderDetails] Real-time status update received:', data);
+                fetchOrderDetails();
+            }
+        };
+
+        socketService.on('order_status_update', handleStatusUpdate);
+
+        return () => {
+            socketService.off('order_status_update', handleStatusUpdate);
+        };
     }, []);
+
+    const makeCall = (phone) => {
+        if (!phone || phone === 'N/A') {
+            Alert.alert('Error', 'Phone number not available');
+            return;
+        }
+        Linking.openURL(`tel:${phone}`);
+    };
 
     const fetchOrderDetails = async () => {
         try {
@@ -37,14 +74,17 @@ const OrderDetailsScreen = ({ route }) => {
         }
     };
 
-    const handleUpdateStatus = async (newStatus, otp = null) => {
+    const handleUpdateStatus = async (newStatus, otp = null, rejectionReason = null) => {
         try {
             setLoading(true);
             const payload = { newStatus };
             if (otp) payload.pickupOtp = otp;
+            if (rejectionReason) payload.rejectionReason = rejectionReason;
+            // Tell backend this cancellation is by the vendor (not customer)
+            if (newStatus === 'Cancelled') payload.cancelledBy = 'vendor';
 
             const response = await client.put(`/order/status/${orderId}/vendor/${vendorId}`, payload);
-            fetchOrderDetails();
+            await fetchOrderDetails();
             Alert.alert('Success', `Order status updated to ${newStatus}.`);
         } catch (error) {
             console.error('Error updating status:', error);
@@ -52,6 +92,22 @@ const OrderDetailsScreen = ({ route }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRejectOrder = () => {
+        if (!selectedReason) {
+            Alert.alert('Error', 'Please select a reason for rejection');
+            return;
+        }
+        if (selectedReason === 'other' && !customReason.trim()) {
+            Alert.alert('Error', 'Please enter a custom reason');
+            return;
+        }
+        setShowRejectModal(false);
+        const finalReason = selectedReason === 'other' ? customReason.trim() : selectedReason;
+        handleUpdateStatus('Cancelled', null, finalReason);
+        setSelectedReason(null);
+        setCustomReason('');
     };
 
     const handleRequestCourier = async () => {
@@ -63,7 +119,7 @@ const OrderDetailsScreen = ({ route }) => {
                 radius: 10
             };
             const response = await client.post('/drivers/nearest', payload);
-            fetchOrderDetails();
+            await fetchOrderDetails();
             Alert.alert('Success', 'Delivery partner search initiated. You will be notified when someone accepts.');
         } catch (error) {
             console.error('Error requesting courier:', error);
@@ -97,12 +153,22 @@ const OrderDetailsScreen = ({ route }) => {
                     <View style={styles.content}>
                         <View style={styles.card}>
                             <View style={styles.cardHeader}>
-                                <Text style={styles.headerTitle}>Order #{order.orderId}</Text>
+                                <Text style={styles.headerTitle}>#{order.orderId}</Text>
                                 <View style={styles.statusBadge}>
                                     <Text style={styles.statusText}>{order.orderStatus?.toUpperCase()}</Text>
                                 </View>
                             </View>
                             <Text style={styles.dateText}>{new Date(order.createdAt).toLocaleString()}</Text>
+                            {order.orderStatus === 'Cancelled' && (
+                                <View style={styles.reasonCard}>
+                                    <Icon name="information-outline" size={18} color="#D32F2F" />
+                                    <Text style={styles.reasonText}>
+                                        <Text style={{ fontWeight: 'bold' }}>Reason: </Text>
+                                        {/* Standard orders have reasons in vendors array, but controller should have hydrated it or we check vendors */}
+                                        {order.cancellationReason || (order.vendors && order.vendors.find(v => (v.vendor === vendorId || v.vendor?._id === vendorId))?.cancellationReason) || 'N/A'}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
 
                         {order.driverId && order.pickupOtp && (
@@ -119,16 +185,26 @@ const OrderDetailsScreen = ({ route }) => {
                                 <Text style={styles.infoLabel}>Name:</Text>{' '}
                                 {order.customer?.name || order.shippingAddress?.name || order.customerNameFallback || 'Walk-in'}
                             </Text>
-                            <Text style={styles.infoText}>
-                                <Text style={styles.infoLabel}>Phone:</Text>{' '}
-                                {order.shippingAddress?.phone || order.customer?.contactNumber || 'N/A'}
-                            </Text>
+                            <View style={styles.contactRow}>
+                                <Text style={styles.infoText}>
+                                    <Text style={styles.infoLabel}>Phone:</Text>{' '}
+                                    {order.shippingAddress?.phone || order.customer?.contactNumber || 'N/A'}
+                                </Text>
+                                {(order.shippingAddress?.phone || order.customer?.contactNumber) && (
+                                    <TouchableOpacity
+                                        style={styles.callIconBtn}
+                                        onPress={() => makeCall(order.shippingAddress?.phone || order.customer?.contactNumber)}
+                                    >
+                                        <Icon name="phone" size={20} color="#4CAF50" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
 
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Delivery Address</Text>
                             <Text style={styles.infoText}>
-                                {order.shippingAddress?.address || formatAddress(order.shippingAddress)}
+                                {order.shippingAddress?.fullAddress || order.shippingAddress?.address || formatAddress(order.shippingAddress)}
                             </Text>
                         </View>
 
@@ -136,7 +212,20 @@ const OrderDetailsScreen = ({ route }) => {
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>Rider Information</Text>
                                 <Text style={styles.infoText}><Text style={styles.infoLabel}>Name:</Text> {order.driverId.personalDetails?.name || 'Assigning...'}</Text>
-                                <Text style={styles.infoText}><Text style={styles.infoLabel}>Phone:</Text> {order.driverId.personalDetails?.phone || 'N/A'}</Text>
+                                <View style={styles.contactRow}>
+                                    <Text style={styles.infoText}>
+                                        <Text style={styles.infoLabel}>Phone:</Text>{' '}
+                                        {order.driverId.personalDetails?.phone || 'N/A'}
+                                    </Text>
+                                    {order.driverId.personalDetails?.phone && (
+                                        <TouchableOpacity
+                                            style={styles.callIconBtn}
+                                            onPress={() => makeCall(order.driverId.personalDetails?.phone)}
+                                        >
+                                            <Icon name="phone" size={20} color="#4CAF50" />
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                             </View>
                         )}
 
@@ -158,7 +247,7 @@ const OrderDetailsScreen = ({ route }) => {
                                                 </Text>
                                             )}
                                         </View>
-                                        <Text style={styles.itemPrice}>₹{item.totalAmount || (item.price * item.quantity)}</Text>
+                                        <Text style={styles.itemPrice}>{formatPrice(item.totalAmount || (item.price * item.quantity))}</Text>
                                     </View>
                                 </View>
                             ))}
@@ -166,7 +255,7 @@ const OrderDetailsScreen = ({ route }) => {
 
                             <View style={[styles.totalRow, { marginTop: 8 }]}>
                                 <Text style={styles.totalLabel}>Total Amount</Text>
-                                <Text style={styles.totalValue}>₹{order.totalAmount}</Text>
+                                <Text style={styles.totalValue}>{formatPrice(order.totalAmount)}</Text>
                             </View>
                         </View>
                     </View>
@@ -186,7 +275,7 @@ const OrderDetailsScreen = ({ route }) => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.actionBtn, styles.rejectBtn]}
-                            onPress={() => handleUpdateStatus('Cancelled')}
+                            onPress={() => setShowRejectModal(true)}
                         >
                             <Text style={styles.btnText}>Reject</Text>
                         </TouchableOpacity>
@@ -202,6 +291,84 @@ const OrderDetailsScreen = ({ route }) => {
                     </TouchableOpacity>
                 )}
             </View>
+
+            {/* Rejection Reason Modal */}
+            <Modal
+                visible={showRejectModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowRejectModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Select Rejection Reason</Text>
+                        <Text style={styles.modalSubtitle}>Please choose a reason for rejecting this order</Text>
+
+                        <ScrollView style={styles.reasonsList}>
+                            {REJECTION_REASONS.map((reason) => (
+                                <TouchableOpacity
+                                    key={reason.id}
+                                    style={[
+                                        styles.reasonItem,
+                                        selectedReason === reason.value && styles.reasonItemSelected
+                                    ]}
+                                    onPress={() => setSelectedReason(reason.value)}
+                                >
+                                    <View style={[
+                                        styles.radioButton,
+                                        selectedReason === reason.value && styles.radioButtonSelected
+                                    ]}>
+                                        {selectedReason === reason.value && (
+                                            <View style={styles.radioButtonInner} />
+                                        )}
+                                    </View>
+                                    <Text style={[
+                                        styles.reasonText,
+                                        selectedReason === reason.value && styles.reasonTextSelected
+                                    ]}>
+                                        {reason.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+
+                        {selectedReason === 'other' && (
+                            <View style={styles.customReasonContainer}>
+                                <Text style={styles.customReasonLabel}>Enter your reason:</Text>
+                                <TextInput
+                                    style={styles.customReasonInput}
+                                    placeholder="Type your reason here..."
+                                    placeholderTextColor="#8E8E93"
+                                    value={customReason}
+                                    onChangeText={setCustomReason}
+                                    multiline
+                                    numberOfLines={3}
+                                    textAlignVertical="top"
+                                />
+                            </View>
+                        )}
+
+                        <View style={styles.modalActions}>
+                            <TouchableOpacity
+                                style={[styles.modalBtn, styles.cancelBtn]}
+                                onPress={() => {
+                                    setShowRejectModal(false);
+                                    setSelectedReason(null);
+                                    setCustomReason('');
+                                }}
+                            >
+                                <Text style={styles.cancelBtnText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalBtn, styles.confirmBtn]}
+                                onPress={handleRejectOrder}
+                            >
+                                <Text style={styles.confirmBtnText}>Confirm Reject</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -255,6 +422,23 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: 14,
         color: '#8E8E93',
+        marginBottom: 8,
+    },
+    reasonCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFEBEE',
+        padding: 10,
+        borderRadius: 8,
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: '#FFCDD2',
+    },
+    reasonText: {
+        fontSize: 14,
+        color: '#D32F2F',
+        marginLeft: 8,
+        flex: 1,
     },
     section: {
         backgroundColor: '#fff',
@@ -263,6 +447,21 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         borderWidth: 1,
         borderColor: '#F2F2F7',
+    },
+    contactRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+    },
+    callIconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#E8F5E9',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 8,
     },
     sectionTitle: {
         fontSize: 14,
@@ -285,13 +484,13 @@ const styles = StyleSheet.create({
     },
     itemRow: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
     itemImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 8,
-        marginRight: 12,
+        width: 80,
+        height: 80,
+        borderRadius: 12,
+        marginRight: 16,
     },
     itemInfo: {
         flex: 1,
@@ -403,6 +602,138 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '700',
+    },
+    // Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 24,
+        width: '100%',
+        maxWidth: 400,
+        maxHeight: '80%',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1A1A1A',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    modalSubtitle: {
+        fontSize: 14,
+        color: '#8E8E93',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    reasonsList: {
+        maxHeight: 250,
+        marginBottom: 20,
+    },
+    reasonItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 8,
+        borderRadius: 10,
+        borderWidth: 1.5,
+        borderColor: '#F2F2F7',
+        marginBottom: 6,
+        backgroundColor: '#fff',
+    },
+    reasonItemSelected: {
+        borderColor: '#ff6600',
+        backgroundColor: '#FFF3E0',
+    },
+    radioButton: {
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        borderWidth: 2,
+        borderColor: '#D1D1D6',
+        marginRight: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    radioButtonSelected: {
+        borderColor: '#ff6600',
+    },
+    radioButtonInner: {
+        width: 9,
+        height: 9,
+        borderRadius: 4.5,
+        backgroundColor: '#ff6600',
+    },
+    reasonText: {
+        fontSize: 13,
+        color: '#1A1A1A',
+        fontWeight: '500',
+        flex: 1,
+    },
+    reasonTextSelected: {
+        color: '#ff6600',
+        fontWeight: '600',
+    },
+    modalActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 12,
+    },
+    modalBtn: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cancelBtn: {
+        backgroundColor: '#F2F2F7',
+        borderWidth: 1,
+        borderColor: '#D1D1D6',
+    },
+    confirmBtn: {
+        backgroundColor: '#FF3B30',
+    },
+    cancelBtnText: {
+        color: '#1A1A1A',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    confirmBtnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    customReasonContainer: {
+        marginBottom: 20,
+        paddingTop: 10,
+    },
+    customReasonLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1A1A1A',
+        marginBottom: 8,
+    },
+    customReasonInput: {
+        borderWidth: 1.5,
+        borderColor: '#ff6600',
+        borderRadius: 12,
+        padding: 12,
+        fontSize: 15,
+        color: '#1A1A1A',
+        backgroundColor: '#FFF3E0',
+        minHeight: 70,
+        maxHeight: 90,
     },
 });
 

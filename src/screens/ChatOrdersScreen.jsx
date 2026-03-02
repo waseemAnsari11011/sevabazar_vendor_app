@@ -1,10 +1,12 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Modal, TextInput, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import client from '../api/client';
+import socketService from '../services/socketService';
 import DateFilter from '../components/DateFilter';
 import { getDateRange } from '../utils/dateUtils';
+import { formatPrice } from '../utils/currencyUtils';
 
 const ChatOrdersScreen = ({ navigation }) => {
     const [orders, setOrders] = useState([]);
@@ -16,6 +18,19 @@ const ChatOrdersScreen = ({ navigation }) => {
             fetchChatOrders();
         }, [])
     );
+
+    useEffect(() => {
+        const handleStatusUpdate = (data) => {
+            console.log('[ChatOrders] Real-time status update received:', data);
+            fetchChatOrders();
+        };
+
+        socketService.on('order_status_update', handleStatusUpdate);
+
+        return () => {
+            socketService.off('order_status_update', handleStatusUpdate);
+        };
+    }, []);
 
     const fetchChatOrders = async () => {
         try {
@@ -44,7 +59,7 @@ const ChatOrdersScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('ChatOrderDetails', { orderId: item.orderId })}
         >
             <View style={styles.cardHeader}>
-                <Text style={styles.orderId}>Order #{item.shortId}</Text>
+                <Text style={styles.orderId}>#{item.shortId}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: item.orderStatus === 'Delivered' ? '#E8F5E9' : '#FFF3E0' }]}>
                     <Text style={[styles.statusText, { color: item.orderStatus === 'Delivered' ? '#2E7D32' : '#EF6C00' }]}>
                         {item.orderStatus.toUpperCase()}
@@ -52,7 +67,7 @@ const ChatOrdersScreen = ({ navigation }) => {
                 </View>
             </View>
             <View style={styles.cardFooter}>
-                <Text style={styles.amount}>₹{(item.totalAmount || (item.deliveryCharge + item.shippingFee) || 0).toFixed(2)}</Text>
+                <Text style={styles.amount}>{formatPrice(item.totalAmount || (item.deliveryCharge + item.shippingFee) || 0)}</Text>
                 <View style={styles.footerActions}>
                     <Text style={styles.date}>
                         {new Date(item.createdAt).toLocaleDateString([], { day: '2-digit', month: 'short' })} | {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

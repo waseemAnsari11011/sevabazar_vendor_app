@@ -5,12 +5,12 @@ const DateFilter = ({ selectedFilter, onFilterChange }) => {
     const filters = [
         { label: 'Today', value: 'today' },
         { label: 'Yesterday', value: 'yesterday' },
-        { label: 'Custom Range', value: 'custom' },
+        { label: 'Date', value: 'custom' },
     ];
 
     return (
         <View style={styles.container}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            <View style={styles.filterWrapper}>
                 {filters.map((filter) => (
                     <TouchableOpacity
                         key={filter.value}
@@ -28,7 +28,7 @@ const DateFilter = ({ selectedFilter, onFilterChange }) => {
                         </Text>
                     </TouchableOpacity>
                 ))}
-            </ScrollView>
+            </View>
         </View>
     );
 };
@@ -40,15 +40,18 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#F2F2F7',
     },
-    scrollContent: {
+    filterWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         paddingHorizontal: 16,
     },
     filterItem: {
-        paddingHorizontal: 16,
+        flex: 1,
+        alignItems: 'center',
         paddingVertical: 8,
         borderRadius: 20,
         backgroundColor: '#F2F2F7',
-        marginRight: 8,
+        marginHorizontal: 4,
     },
     activeFilterItem: {
         backgroundColor: '#ff6600',

@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import client from '../api/client';
+import messaging from '@react-native-firebase/messaging';
+import socketService from '../services/socketService';
+import notificationService from '../services/notificationService';
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -24,6 +27,21 @@ const LoginScreen = ({ navigation }) => {
             const { token, vendor } = response.data;
             await AsyncStorage.setItem('vendorToken', token);
             await AsyncStorage.setItem('vendorData', JSON.stringify(vendor));
+
+            // Initialize Services for foreground alerting immediately
+            await notificationService.init();
+            await notificationService.setupForegroundHandlers(vendor._id);
+
+            // Save Device Token for Push Notifications
+            try {
+                const deviceToken = await messaging().getToken();
+                if (deviceToken) {
+                    await client.post('/vendors/me/save-device-token', { deviceToken });
+                    console.log('Device token saved successfully');
+                }
+            } catch (tokenErr) {
+                console.error('Failed to save device token:', tokenErr);
+            }
 
             navigation.replace('Home');
         } catch (error) {

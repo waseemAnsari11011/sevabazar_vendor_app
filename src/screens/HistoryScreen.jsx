@@ -1,10 +1,12 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Modal, Alert, Pressable } from 'react-native';
+import DatePicker from 'react-native-date-picker';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import client from '../api/client';
-import DateFilter from '../components/DateFilter';
 import { getDateRange } from '../utils/dateUtils';
+import { formatPrice } from '../utils/currencyUtils';
 
 const HistoryScreen = ({ navigation }) => {
     const [allHistory, setAllHistory] = useState([]);
@@ -15,6 +17,30 @@ const HistoryScreen = ({ navigation }) => {
     const [customEnd, setCustomEnd] = useState('');
     const [activeTab, setActiveTab] = useState('normal');
     const [vendorId, setVendorId] = useState(null);
+    const [showStartPicker, setShowStartPicker] = useState(false);
+    const [showEndPicker, setShowEndPicker] = useState(false);
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+
+    React.useLayoutEffect(() => {
+        navigation.setOptions({
+            headerLeft: () => (
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('Dashboard')}
+                    style={{ marginLeft: 15 }}
+                >
+                    <Icon name="arrow-left" size={24} color="#000" />
+                </TouchableOpacity>
+            ),
+            headerRight: () => (
+                <TouchableOpacity
+                    onPress={() => setShowFilterDropdown(true)}
+                    style={{ marginRight: 15 }}
+                >
+                    <Icon name="filter-variant" size={24} color="#000" />
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation]);
 
     useFocusEffect(
         useCallback(() => {
@@ -36,6 +62,7 @@ const HistoryScreen = ({ navigation }) => {
                 if (startDate && endDate) {
                     params.startDate = startDate;
                     params.endDate = endDate;
+                    params.dateField = 'createdAt'; // Use createdAt to include cancelled orders
                 }
 
                 if (tab === 'normal') {
@@ -96,10 +123,10 @@ const HistoryScreen = ({ navigation }) => {
                 </View>
             </View>
             <View style={styles.cardFooter}>
-                <Text style={styles.amount}>₹{item.totalAmount || 0}</Text>
+                <Text style={styles.amount}>{formatPrice(item.totalAmount || 0)}</Text>
                 <View style={styles.footerActions}>
                     <Text style={styles.date}>
-                        {new Date(item.createdAt).toLocaleDateString([], { day: '2-digit', month: 'short' })} | {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(item.deliveredAt || item.createdAt).toLocaleDateString([], { day: '2-digit', month: 'short' })} | {new Date(item.deliveredAt || item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
                     <TouchableOpacity
                         onPress={() => Linking.openURL(item.type === 'normal'
@@ -140,10 +167,6 @@ const HistoryScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <CustomTabBar />
-            <DateFilter
-                selectedFilter={selectedFilter}
-                onFilterChange={handleFilterChange}
-            />
             {loading ? (
                 <ActivityIndicator size="large" color="#ff6600" style={styles.loader} />
             ) : (
@@ -166,17 +189,50 @@ const HistoryScreen = ({ navigation }) => {
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Select Date Range</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Start Date (YYYY-MM-DD)"
-                            value={customStart}
-                            onChangeText={setCustomStart}
+                        <TouchableOpacity
+                            style={styles.dateInput}
+                            onPress={() => setShowStartPicker(true)}
+                        >
+                            <Text style={customStart ? styles.dateValue : styles.datePlaceholder}>
+                                {customStart || 'Start Date (YYYY-MM-DD)'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.dateInput}
+                            onPress={() => setShowEndPicker(true)}
+                        >
+                            <Text style={customEnd ? styles.dateValue : styles.datePlaceholder}>
+                                {customEnd || 'End Date (YYYY-MM-DD)'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <DatePicker
+                            modal
+                            open={showStartPicker}
+                            date={customStart ? new Date(customStart) : new Date()}
+                            mode="date"
+                            onConfirm={(date) => {
+                                setShowStartPicker(false);
+                                setCustomStart(date.toISOString().split('T')[0]);
+                            }}
+                            onCancel={() => {
+                                setShowStartPicker(false);
+                            }}
                         />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="End Date (YYYY-MM-DD)"
-                            value={customEnd}
-                            onChangeText={setCustomEnd}
+
+                        <DatePicker
+                            modal
+                            open={showEndPicker}
+                            date={customEnd ? new Date(customEnd) : new Date()}
+                            mode="date"
+                            onConfirm={(date) => {
+                                setShowEndPicker(false);
+                                setCustomEnd(date.toISOString().split('T')[0]);
+                            }}
+                            onCancel={() => {
+                                setShowEndPicker(false);
+                            }}
                         />
                         <View style={styles.modalButtons}>
                             <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setShowRangeModal(false)}>
@@ -188,6 +244,54 @@ const HistoryScreen = ({ navigation }) => {
                         </View>
                     </View>
                 </View>
+            </Modal>
+
+            {/* Filter Dropdown Modal */}
+            <Modal
+                visible={showFilterDropdown}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowFilterDropdown(false)}
+            >
+                <Pressable
+                    style={styles.dropdownOverlay}
+                    onPress={() => setShowFilterDropdown(false)}
+                >
+                    <View style={styles.dropdownMenu}>
+                        <TouchableOpacity
+                            style={[styles.dropdownItem, selectedFilter === 'today' && styles.activeDropdownItem]}
+                            onPress={() => {
+                                handleFilterChange('today');
+                                setShowFilterDropdown(false);
+                            }}
+                        >
+                            <Icon name="calendar-today" size={20} color={selectedFilter === 'today' ? '#ff6600' : '#555'} />
+                            <Text style={[styles.dropdownText, selectedFilter === 'today' && styles.activeDropdownText]}>Today</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.dropdownItem, selectedFilter === 'yesterday' && styles.activeDropdownItem]}
+                            onPress={() => {
+                                handleFilterChange('yesterday');
+                                setShowFilterDropdown(false);
+                            }}
+                        >
+                            <Icon name="calendar-arrow-left" size={20} color={selectedFilter === 'yesterday' ? '#ff6600' : '#555'} />
+                            <Text style={[styles.dropdownText, selectedFilter === 'yesterday' && styles.activeDropdownText]}>Yesterday</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.dropdownItem, selectedFilter === 'custom' && styles.activeDropdownItem]}
+                            onPress={() => {
+                                handleFilterChange('custom');
+                                setShowFilterDropdown(false);
+                            }}
+                        >
+                            <Icon name="calendar-range" size={20} color={selectedFilter === 'custom' ? '#ff6600' : '#555'} />
+                            <Text style={[styles.dropdownText, selectedFilter === 'custom' && styles.activeDropdownText]}>Select Date</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Pressable>
             </Modal>
         </View>
     );
@@ -328,12 +432,22 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         textAlign: 'center',
     },
-    input: {
+    dateInput: {
         borderWidth: 1,
         borderColor: '#F2F2F7',
         borderRadius: 8,
         padding: 12,
         marginBottom: 12,
+        height: 50,
+        justifyContent: 'center',
+    },
+    datePlaceholder: {
+        color: '#8E8E93',
+        fontSize: 14,
+    },
+    dateValue: {
+        color: '#1A1A1A',
+        fontSize: 14,
     },
     modalButtons: {
         flexDirection: 'row',
@@ -359,6 +473,44 @@ const styles = StyleSheet.create({
     applyButtonText: {
         color: '#fff',
         fontWeight: '600',
+    },
+    dropdownOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.1)',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-end',
+    },
+    dropdownMenu: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        marginTop: 60,
+        marginRight: 10,
+        width: 160,
+        paddingVertical: 8,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+    },
+    dropdownItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+    },
+    activeDropdownItem: {
+        backgroundColor: '#FFF5F0',
+    },
+    dropdownText: {
+        fontSize: 14,
+        color: '#333',
+        marginLeft: 12,
+        fontWeight: '500',
+    },
+    activeDropdownText: {
+        color: '#ff6600',
+        fontWeight: '700',
     },
 });
 

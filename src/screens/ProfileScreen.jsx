@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Button, TouchableOpacity, ScrollView, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import socketService from '../services/socketService';
+import { reset } from '../navigation/NavigationService';
 
 const ProfileScreen = ({ navigation }) => {
     const [vendor, setVendor] = useState(null);
@@ -9,6 +11,19 @@ const ProfileScreen = ({ navigation }) => {
     useEffect(() => {
         loadVendor();
     }, []);
+
+    React.useLayoutEffect(() => {
+        navigation.setOptions({
+            headerLeft: () => (
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('Dashboard')}
+                    style={{ marginLeft: 15 }}
+                >
+                    <Icon name="arrow-left" size={24} color="#000" />
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation]);
 
     const loadVendor = async () => {
         const data = await AsyncStorage.getItem('vendorData');
@@ -19,8 +34,12 @@ const ProfileScreen = ({ navigation }) => {
         try {
             await AsyncStorage.removeItem('vendorToken');
             await AsyncStorage.removeItem('vendorData');
-            // Navigate to Login (will bubble up to parent stack)
-            navigation.navigate('Login');
+
+            // Explicitly disconnect socket
+            socketService.disconnect();
+
+            // Reliable navigation reset to Login
+            reset('Login');
         } catch (error) {
             console.error('Logout error:', error);
         }
@@ -32,7 +51,14 @@ const ProfileScreen = ({ navigation }) => {
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             <View style={styles.header}>
                 <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{vendor.name?.charAt(0)}</Text>
+                    {(vendor.documents?.shopPhoto?.[0] || vendor.shopPhoto) ? (
+                        <Image
+                            source={{ uri: vendor.documents?.shopPhoto?.[0] || vendor.shopPhoto }}
+                            style={styles.avatarImage}
+                        />
+                    ) : (
+                        <Text style={styles.avatarText}>{vendor.name?.charAt(0)}</Text>
+                    )}
                 </View>
                 <Text style={styles.name}>{vendor.name}</Text>
                 <Text style={styles.email}>{vendor.email}</Text>
@@ -58,6 +84,18 @@ const ProfileScreen = ({ navigation }) => {
                         </Text>
                     </View>
                 </View>
+            </View>
+
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Support & Help</Text>
+                <TouchableOpacity
+                    style={styles.supportBtn}
+                    onPress={() => navigation.navigate('SupportTicket')}
+                >
+                    <Icon name="headset" size={24} color="#ff6600" />
+                    <Text style={styles.supportBtnText}>Contact Support</Text>
+                    <Icon name="chevron-right" size={24} color="#8E8E93" style={{ marginLeft: 'auto' }} />
+                </TouchableOpacity>
             </View>
 
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
@@ -89,6 +127,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 16,
+        overflow: 'hidden',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
     },
     avatarText: {
         color: '#fff',
@@ -156,6 +200,21 @@ const styles = StyleSheet.create({
         color: '#FF3B30',
         fontSize: 16,
         fontWeight: '700',
+    },
+    supportBtn: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#F2F2F7',
+    },
+    supportBtnText: {
+        fontSize: 16,
+        color: '#1A1A1A',
+        fontWeight: '600',
+        marginLeft: 12,
     },
 });
 

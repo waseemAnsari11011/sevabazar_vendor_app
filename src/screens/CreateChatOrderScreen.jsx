@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import client from '../api/client';
+import { formatPrice } from '../utils/currencyUtils';
 
 const CreateChatOrderScreen = ({ route, navigation }) => {
     const { orderId, vendorId, orderMsg } = route.params;
@@ -52,7 +53,7 @@ const CreateChatOrderScreen = ({ route, navigation }) => {
             const price = parseFloat(updatedProducts[index].price) || 0;
             const discount = parseFloat(updatedProducts[index].discount) || 0;
             const quantity = parseInt(updatedProducts[index].quantity) || 0;
-            updatedProducts[index].totalAmount = (price * quantity * (1 - discount / 100)).toFixed(2);
+            updatedProducts[index].totalAmount = Math.round(price * quantity * (1 - discount / 100));
         }
         setProducts(updatedProducts);
     };
@@ -167,7 +168,7 @@ const CreateChatOrderScreen = ({ route, navigation }) => {
                             </View>
                             <View style={[styles.flex1, { marginLeft: 10, justifyContent: 'center' }]}>
                                 <Text style={styles.totalLabel}>Subtotal</Text>
-                                <Text style={styles.totalValue}>₹{product.totalAmount}</Text>
+                                <Text style={styles.totalValue}>{formatPrice(product.totalAmount)}</Text>
                             </View>
                         </View>
                     </View>
@@ -181,7 +182,7 @@ const CreateChatOrderScreen = ({ route, navigation }) => {
                 <View style={styles.totalCard}>
                     <Text style={styles.grandTotalLabel}>Grand Total:</Text>
                     <Text style={styles.grandTotalValue}>
-                        ₹{products.reduce((acc, curr) => acc + parseFloat(curr.totalAmount || 0), 0).toFixed(2)}
+                        {formatPrice(products.reduce((acc, curr) => acc + parseFloat(curr.totalAmount || 0), 0))}
                     </Text>
                 </View>
             </ScrollView>
@@ -232,9 +233,10 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     headerMsg: {
-        fontSize: 16,
+        fontSize: 22,
         color: '#1A1A1A',
-        lineHeight: 22,
+        lineHeight: 30,
+        fontWeight: 'bold',
     },
     productCard: {
         backgroundColor: '#fff',

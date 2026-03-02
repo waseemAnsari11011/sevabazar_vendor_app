@@ -1,0 +1,105 @@
+{
+  "project_info": {
+    "project_number": "421777022672",
+    "project_id": "sevabazar-5d3f6",
+    "storage_bucket": "sevabazar-5d3f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421777022672:android:d15218ab90275061f7c8d5",
+        "android_client_info": {
+          "package_name": "com.deliverypartner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7R6iOjIofZBokkVWatwZ7Ppvl_O3Bxw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421777022672:android:87b69d37c66cb721f7c8d5",
+        "android_client_info": {
+          "package_name": "com.sevabazar.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7R6iOjIofZBokkVWatwZ7Ppvl_O3Bxw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421777022672:android:ccc24195529f8807f7c8d5",
+        "android_client_info": {
+          "package_name": "com.sevabazar_driver_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7R6iOjIofZBokkVWatwZ7Ppvl_O3Bxw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421777022672:android:e29e5288630fe05df7c8d5",
+        "android_client_info": {
+          "package_name": "com.sevabazarapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7R6iOjIofZBokkVWatwZ7Ppvl_O3Bxw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421777022672:android:1166ba2d61771d6bf7c8d5",
+        "android_client_info": {
+          "package_name": "com.vendorapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7R6iOjIofZBokkVWatwZ7Ppvl_O3Bxw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

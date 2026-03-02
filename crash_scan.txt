@@ -1,0 +1,129 @@
+--------- beginning of main
+--------- beginning of system
+02-23 16:40:46.334  1287  1287 E perfetto: probes_producer.cc:176  Failed to create data source 'linux.ftrace'
+02-23 16:40:46.334  1287  1287 E perfetto: probes_producer.cc:191  Data source id=564 not found
+02-23 16:40:46.337  1018  1070 E ANDR-PERF-LM: MetaMeter: handleAsync() 164: AdaptLaunch Invalid Async
+02-23 16:40:46.337  1018  1070 E ANDR-PERF-LM: MetaMeter: handleAsync() 164: AdaptLaunch Invalid Async
+02-23 16:40:46.338  2060  5057 E ANDR-PERF-JNI: com_qualcomm_qtiperformance_native_perf_io_prefetch_start
+02-23 16:40:46.351  1015  1037 E ANDR-IOP: io prefetch is disabled
+02-23 16:40:46.351   854   894 E statsd  : Predicate 5980654721335871649 dropping data for dimension key (10)0x2010101->10324[I] (10)0x30000->*launch*[S] 
+02-23 16:40:46.422  1018  1070 E ANDR-PERF-LM: MetaMeter: handleAsync() 164: AdaptLaunch Invalid Async
+02-23 16:40:46.463  2683  5040 E ActivityManagerWrapper: get all recent tasks force including 336
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: size=31
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=336   userId=0   baseIntent=Intent { act=null flag=268435456 cmp=ComponentInfo{com.vendorapp/com.vendorapp.MainActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=322   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=287309824 cmp=ComponentInfo{mark.via.gp/mark.via.ui.activity.BrowserActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=321   userId=0   baseIntent=Intent { act=miui.intent.action.CHECK_ACCESS_CONTROL flag=411041792 cmp=ComponentInfo{com.miui.securitycenter/com.miui.applicationlock.ConfirmAccessControl} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=319   userId=0   baseIntent=Intent { act=android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS flag=268435456 cmp=ComponentInfo{com.miui.powerkeeper/com.miui.powerkeeper.ui.HiddenAppsConfigActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=295   userId=0   baseIntent=Intent { act=android.settings.APPLICATION_DETAILS_SETTINGS flag=268468224 cmp=ComponentInfo{com.android.settings/com.android.settings.applications.InstalledAppDetails} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=209   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=335552512 cmp=ComponentInfo{com.android.chrome/org.chromium.chrome.browser.ChromeTabbedActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=284   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=276824064 cmp=ComponentInfo{android/com.android.internal.app.ResolverActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=282   userId=0   baseIntent=Intent { act=com.whatsapp.intent.action.OPEN flag=335544320 cmp=ComponentInfo{com.whatsapp/com.whatsapp.Conversation} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=283   userId=0   baseIntent=Intent { act=null flag=276824064 cmp=ComponentInfo{com.whatsapp/com.whatsapp.calling.ui.VoipActivityV2} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=223   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=270532608 cmp=ComponentInfo{com.android.camera/com.android.camera.Camera} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=232   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=287309824 cmp=ComponentInfo{com.miui.gallery/com.miui.gallery.activity.HomePageActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=155   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=270532608 cmp=ComponentInfo{com.android.contacts/com.android.contacts.activities.TwelveKeyDialer} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=222   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=270532608 cmp=ComponentInfo{com.google.android.youtube/com.google.android.youtube.app.honeycomb.Shell$HomeActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=227   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=277086208 cmp=ComponentInfo{com.android.incallui/com.android.incallui.InCallActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=224   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=268435456 cmp=ComponentInfo{com.gamma.scan/com.gamma.barcodeapp.ui.BarcodeCaptureActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=226   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=327155712 cmp=ComponentInfo{com.google.android.gms/com.google.android.gms.auth.aang.impl.deeplink.DeepLinkActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=225   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=277348352 cmp=ComponentInfo{android/com.android.internal.app.ResolverActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=206   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=270532608 cmp=ComponentInfo{com.android.vending/com.android.vending.AssetBrowserActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=218   userId=0   baseIntent=Intent { act=android.settings.SETTINGS flag=335544320 cmp=ComponentInfo{com.android.settings/com.android.settings.MiuiSettings} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=220   userId=0   baseIntent=Intent { act=com.google.android.gms.ui.UNPACKING_REDIRECT flag=268468224 cmp=ComponentInfo{com.google.android.gms/com.google.android.gms.auth.uiflows.common.UnpackingRedirectActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=217   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=327155712 cmp=ComponentInfo{com.google.android.gms/com.google.android.gms.auth.aang.impl.deeplink.DeepLinkActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=213   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=327155712 cmp=ComponentInfo{com.google.android.gms/com.google.android.gms.auth.aang.impl.deeplink.DeepLinkActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=215   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=335544320 cmp=ComponentInfo{com.android.mms/com.android.mms.ui.ComposeMessageRouterActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=211   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=327155712 cmp=ComponentInfo{com.google.android.gms/com.google.android.gms.auth.aang.impl.deeplink.DeepLinkActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=210   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=327155712 cmp=ComponentInfo{com.google.android.gms/com.google.android.gms.auth.aang.impl.deeplink.DeepLinkActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=208   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=327155712 cmp=ComponentInfo{com.google.android.gms/com.google.android.gms.auth.aang.impl.deeplink.DeepLinkActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=204   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=270532608 cmp=ComponentInfo{com.sevabazar_driver_mobile/com.sevabazar_driver_mobile.MainActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=203   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=268435456 cmp=ComponentInfo{com.sevabazar.customer/com.sevabazar.customer.MainActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=194   userId=0   baseIntent=Intent { act=android.intent.action.VIEW flag=276824065 cmp=ComponentInfo{com.miui.packageinstaller/com.android.packageinstaller.PackageInstallerActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=195   userId=0   baseIntent=Intent { act=null flag=276824064 cmp=ComponentInfo{com.android.vending/com.google.android.finsky.protectdialogs.activity.PlayProtectDialogsActivity} }
+02-23 16:40:46.466  2683  5040 E ActivityManagerWrapper: getRecentTasks: taskId=188   userId=0   baseIntent=Intent { act=android.intent.action.MAIN flag=287309824 cmp=ComponentInfo{idm.internet.download.manager.plus/idm.internet.download.manager.MainActivity} }
+02-23 16:40:46.466  2683  5040 E ReflectUtils: getField
+02-23 16:40:46.466  2683  5040 E ReflectUtils: java.lang.NoSuchFieldException: No field childrenTaskInfos in class Landroid/app/ActivityManager$RecentTaskInfo; (declaration of 'android.app.ActivityManager$RecentTaskInfo' appears in /system/framework/framework.jar)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at java.lang.Class.getDeclaredField(Native Method)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.utilities.ReflectUtils.getField(Unknown Source:14)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.utilities.ReflectUtils.getField(Unknown Source:4)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.utilities.ReflectUtils.getObjectField(Unknown Source:1)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.model.RecentsTaskLoadPlan.preloadPlan(Unknown Source:83)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.model.RecentsTaskLoader.preloadTasks(Unknown Source:27)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at com.miui.home.recents.RecentsModel.preloadRecents(Unknown Source:34)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at com.miui.home.recents.RecentsModel$HandlerCallbacks.handleMessage(Unknown Source:39)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at android.os.Handler.dispatchMessage(Unknown Source:12)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at android.os.Looper.loop(Unknown Source:249)
+02-23 16:40:46.466  2683  5040 E ReflectUtils: 	at android.os.HandlerThread.run(Unknown Source:28)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: getField
+02-23 16:40:46.472  2683  5040 E ReflectUtils: java.lang.NoSuchFieldException: No field childrenTaskInfos in class Landroid/app/ActivityManager$RecentTaskInfo; (declaration of 'android.app.ActivityManager$RecentTaskInfo' appears in /system/framework/framework.jar)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at java.lang.Class.getDeclaredField(Native Method)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.utilities.ReflectUtils.getField(Unknown Source:14)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.utilities.ReflectUtils.getField(Unknown Source:4)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.utilities.ReflectUtils.getObjectField(Unknown Source:1)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.model.RecentsTaskLoadPlan.preloadPlan(Unknown Source:83)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at com.android.systemui.shared.recents.model.RecentsTaskLoader.preloadTasks(Unknown Source:27)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at com.miui.home.recents.RecentsModel.preloadRecents(Unknown Source:34)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at com.miui.home.recents.RecentsModel$HandlerCallbacks.handleMessage(Unknown Source:39)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at android.os.Handler.dispatchMessage(Unknown Source:12)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at android.os.Looper.loop(Unknown Source:249)
+02-23 16:40:46.472  2683  5040 E ReflectUtils: 	at android.os.HandlerThread.run(Unknown Source:28)
+02-23 16:40:46.639 16027 16027 E LoadedApk: Unable to instantiate appComponentFactory
+02-23 16:40:46.639 16027 16027 E LoadedApk: java.lang.ClassNotFoundException: Didn't find class "androidx.core.app.CoreComponentFactory" on path: DexPathList[[zip file "/data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/base.apk"],nativeLibraryDirectories=[/data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/lib/arm64, /data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/base.apk!/lib/arm64-v8a, /system/lib64, /system_ext/lib64]]
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:207)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:379)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:312)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.LoadedApk.createAppFactory(Unknown Source:12)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.LoadedApk.createOrUpdateClassLoaderLocked(Unknown Source:567)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.LoadedApk.getClassLoader(Unknown Source:6)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.LoadedApk.getResources(Unknown Source:29)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.ContextImpl.createAppContext(Unknown Source:18)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.ContextImpl.createAppContext(Unknown Source:1)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.ActivityThread.handleBindApplication(Unknown Source:806)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.ActivityThread.access$1500(Unknown Source:0)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.ActivityThread$H.handleMessage(Unknown Source:692)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.os.Handler.dispatchMessage(Unknown Source:19)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.os.Looper.loop(Unknown Source:249)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at android.app.ActivityThread.main(Unknown Source:134)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at java.lang.reflect.Method.invoke(Native Method)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(Unknown Source:11)
+02-23 16:40:46.639 16027 16027 E LoadedApk: 	at com.android.internal.os.ZygoteInit.main(Unknown Source:313)
+--------- beginning of crash
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: FATAL EXCEPTION: main
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: Process: com.vendorapp, PID: 16027
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: java.lang.RuntimeException: Unable to instantiate application com.vendorapp.MainApplication: java.lang.ClassNotFoundException: Didn't find class "com.vendorapp.MainApplication" on path: DexPathList[[zip file "/data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/base.apk"],nativeLibraryDirectories=[/data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/lib/arm64, /data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/base.apk!/lib/arm64-v8a, /system/lib64, /system_ext/lib64]]
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.app.LoadedApk.makeApplication(Unknown Source:226)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(Unknown Source:1211)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.app.ActivityThread.access$1500(Unknown Source:0)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(Unknown Source:692)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Unknown Source:19)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.os.Looper.loop(Unknown Source:249)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.app.ActivityThread.main(Unknown Source:134)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(Unknown Source:11)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(Unknown Source:313)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: Caused by: java.lang.ClassNotFoundException: Didn't find class "com.vendorapp.MainApplication" on path: DexPathList[[zip file "/data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/base.apk"],nativeLibraryDirectories=[/data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/lib/arm64, /data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/base.apk!/lib/arm64-v8a, /system/lib64, /system_ext/lib64]]
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:207)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:379)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:312)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.app.AppComponentFactory.instantiateApplication(Unknown Source:0)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.app.Instrumentation.newApplication(Unknown Source:8)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	at android.app.LoadedApk.makeApplication(Unknown Source:103)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	... 9 more
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	Suppressed: java.lang.NoClassDefFoundError: Failed resolution of: Lcom/facebook/react/ReactApplication;
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 		at java.lang.VMClassLoader.findLoadedClass(Native Method)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 		at java.lang.ClassLoader.findLoadedClass(ClassLoader.java:738)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 		at java.lang.ClassLoader.loadClass(ClassLoader.java:363)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 		... 13 more
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 	Caused by: java.lang.ClassNotFoundException: Didn't find class "com.facebook.react.ReactApplication" on path: DexPathList[[zip file "/data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/base.apk"],nativeLibraryDirectories=[/data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/lib/arm64, /data/app/~~89zgGzzE0H1sLkxZ9mW52w==/com.vendorapp-Zt-7wVoMN4E3NRKbN-GK_Q==/base.apk!/lib/arm64-v8a, /system/lib64, /system_ext/lib64]]
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 		at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:207)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 		at java.lang.ClassLoader.loadClass(ClassLoader.java:379)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 		at java.lang.ClassLoader.loadClass(ClassLoader.java:312)
+02-23 16:40:46.651 16027 16027 E AndroidRuntime: 		... 16 more
+02-23 16:40:46.652 16027 16027 E MQSEventManagerDelegate: failed to get MQSService.
+02-23 16:40:46.652 16027 16027 E MQSEventManagerDelegate: failed to get MQSService.
+02-23 16:40:46.685   854   894 E statsd  : Predicate 5980654721335871649 dropping data for dimension key (10)0x2010101->10324[I] (10)0x30000->*launch*[S] 
+02-23 16:40:46.697  2683  3209 E Launcher: notifyBackGestureStatus:run usingFsGesture=true   show=true   focus=false   pause=false
+02-23 16:40:46.837  2683  2683 E RotationHelper: setCurrentTransitionRequest: request=0
+02-23 16:40:51.340  1287  1287 E perfetto: probes_producer.cc:333  Cannot stop data source id=564, not found
+02-23 16:40:54.655 13372 13454 E newrelic: Failed to retrieve collector response: Failed to connect to mobile-collector.newrelic.com/0.0.0.0:443
+02-23 16:40:54.655 13372 13454 E newrelic: HarvestConnection: Attempting to convert network exception java.net.ConnectException to error code.
