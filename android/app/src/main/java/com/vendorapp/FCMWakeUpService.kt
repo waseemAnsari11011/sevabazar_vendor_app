@@ -31,10 +31,26 @@ class FCMWakeUpService : ReactNativeFirebaseMessagingService() {
         )
         
         try {
-            cpuWakeLock.acquire(10000L) // 10 seconds
+            cpuWakeLock.acquire(10000L) // 10 seconds CPU lock
 
-            if (type == "new_order" || type == "NEW_ORDER_ALERT" || type == "delivery_order") {
-                Log.d("FCMWakeUpService", "[WAKEUP] New order alert detected. Launching MainActivity...")
+            if (type == "new_order" || type == "NEW_ORDER_ALERT" || type == "delivery_order" || type == "new_order_offer") {
+                Log.d("FCMWakeUpService", "[WAKEUP] New order alert detected. Waking screen and launching MainActivity...")
+                
+                // FORCE SCREEN ON: Use a bright wake lock with ACQUIRE_CAUSES_WAKEUP
+                // to turn the screen on immediately from the background service.
+                val screenWakeLock = powerManager.newWakeLock(
+                    PowerManager.SCREEN_BRIGHT_WAKE_LOCK or
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                    PowerManager.ON_AFTER_RELEASE,
+                    "VendorApp::FullWakeLock"
+                )
+                
+                try {
+                    screenWakeLock.acquire(5000L) // 5 seconds screen on
+                    Log.d("FCMWakeUpService", "[WAKEUP] Screen WakeLock acquired.")
+                } catch (e: Exception) {
+                    Log.e("FCMWakeUpService", "[WAKEUP] Failed to acquire Screen WakeLock: ${e.message}")
+                }
                 
                 val context: Context = this
                 val intent = Intent(context, MainActivity::class.java).apply {
@@ -46,9 +62,10 @@ class FCMWakeUpService : ReactNativeFirebaseMessagingService() {
                 }
                 
                 try {
-                    showBackupNotification(this, shortId, data)
+                    // REACHED: user requested to NOT show notification, only the call screen.
+                    // showBackupNotification(this, shortId, data) 
                     context.startActivity(intent)
-                    Log.d("FCMWakeUpService", "[WAKEUP] startActivity call performed.")
+                    Log.d("FCMWakeUpService", "[WAKEUP] startActivity call performed. Notification suppressed by request.")
                 } catch (e: Exception) {
                     Log.e("FCMWakeUpService", "[WAKEUP] Native launch failed: ${e.message}", e)
                 }
@@ -57,17 +74,12 @@ class FCMWakeUpService : ReactNativeFirebaseMessagingService() {
                 super.onMessageReceived(remoteMessage)
 
             } else if (type == "order_cancelled") {
+                // ... cancellation logic remains the same
                 Log.d("FCMWakeUpService", "[CANCELLATION] Showing cancellation notification natively.")
-                // Show a native notification for the cancellation
                 showCancellationNotification(this, shortId, data)
-                
-                // DO NOT call super.onMessageReceived for cancellations!
-                // The JS backgroundHandler would run again and can cause a 2nd notification or unwanted behavior.
-                // The native notification shown above is the ONLY one that should appear.
                 Log.d("FCMWakeUpService", "[CANCELLATION] Handled fully natively. NOT calling super.")
                 
             } else {
-                // For other message types, pass through to JS layer
                 super.onMessageReceived(remoteMessage)
             }
 
@@ -170,9 +182,11 @@ class FCMWakeUpService : ReactNativeFirebaseMessagingService() {
             .setContentTitle("New Order #$shortId")
             .setContentText("Tap to open the app and accept.")
             .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_CALL)
-            .setFullScreenIntent(pendingIntent, true)
+            .setCategory(NotificationCompat.CATEGORY_CALL) // Treat like a call to bypass DND sometimes and show heads-up
+            .setFullScreenIntent(pendingIntent, true) // This is what wakes the screen on lock screen
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // Make visible on lock screen
             .setAutoCancel(true)
+            .setOngoing(true) // Prevent accidental dismissal till action taken
             .build()
 
         notificationManager.notify(1001, notification)

@@ -380,8 +380,8 @@ class NotificationService {
 
                 // If in background or inactive (locked), use high-priority notification to wake screen
                 if (AppState.currentState !== 'active') {
-                    console.log('[NotificationService] App in background, triggering wake-up notification');
-                    await this.displayCallNotification(data);
+                    console.log('[NotificationService] App in background, BUT suppressing notification per request. Relying on WakeUpService/ActivityLauncher.');
+                    // await this.displayCallNotification(data); // Suppressed to avoid notification icon/banner
                 }
 
                 // ALWAYS trigger foreground handling (navigation + JS ringtone)

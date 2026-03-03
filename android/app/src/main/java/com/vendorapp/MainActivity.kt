@@ -45,6 +45,7 @@ class MainActivity : ReactActivity() {
     val isOrderAlert = type == "new_order" || 
                        type == "delivery_order" || 
                        type == "NEW_ORDER_ALERT" || 
+                       type == "new_order_offer" ||
                        (orderId != null && type != "order_cancelled")
     
     Log.d("MainActivity", "!!! handleIntentFlags !!! Action: $action, Type: $type, ID: $orderId, wasTapped: $wasTapped, isOrderAlert: $isOrderAlert")

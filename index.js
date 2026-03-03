@@ -15,9 +15,13 @@ import { backgroundHandler, notifeeBackgroundHandler } from './src/services/noti
 messaging().setBackgroundMessageHandler(async (remoteMessage) => {
     // Explicitly call native module from here ONLY for new orders
     const { ActivityLauncher } = NativeModules;
-    const isNewOrder = remoteMessage.data?.type === 'new_order';
+    const isCriticalOrder =
+        remoteMessage.data?.type === 'new_order' ||
+        remoteMessage.data?.type === 'NEW_ORDER_ALERT' ||
+        remoteMessage.data?.type === 'delivery_order' ||
+        remoteMessage.data?.type === 'new_order_offer';
 
-    if (isNewOrder) {
+    if (isCriticalOrder) {
         // BRIDGE: Set AsyncStorage BEFORE bringing to foreground
         // This ensures AppNavigator sees it on boot
         try {
